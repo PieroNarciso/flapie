@@ -13,7 +13,7 @@ type model struct {
 
 func NewModel() tea.Model {
 	return &model{
-		bird: entity.NewBirdPlayer(),
+		bird:      entity.NewBirdPlayer(),
 		obstacles: make([]entity.Obstacle, 0),
 	}
 }
@@ -22,10 +22,20 @@ func (m model) Init() tea.Cmd {
 	return nil
 }
 
-func (m model) Update(tea.Msg) (tea.Model, tea.Cmd) {
-	return nil, nil
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q":
+			return m, tea.Quit
+		case "space":
+			p := m.bird.Position()
+			m.bird.SetY(p.Y-1)
+		}
+	}
+	return m, nil
 }
 
 func (m model) View() string {
-	return ""
+	return "Hola Mundo!"
 }

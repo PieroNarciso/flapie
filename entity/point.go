@@ -1,6 +1,6 @@
 package entity
 
 type Point struct {
-	x int
-	y int
+	X int
+	Y int
 }
