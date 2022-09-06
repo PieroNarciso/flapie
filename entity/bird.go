@@ -3,7 +3,8 @@ package entity
 type Player interface {
 	SetX(x int) Player
 	SetY(y int) Player
-	Position() Point
+	X() int
+	Y() int
 	SetSpeed(speed int) Player
 	SetAccel(accel int) Player
 	Speed() int
@@ -17,22 +18,26 @@ type bird struct {
 }
 
 func (b *bird) SetX(x int) Player {
-	b.position.x = x
+	b.position.X = x
 	return b
 }
 
 func (b *bird) SetY(y int) Player {
-	b.position.y = y
+	b.position.Y = y
 	return b
+}
+
+func (b *bird) X() int {
+	return b.position.X
+}
+
+func (b *bird) Y() int {
+	return b.position.Y
 }
 
 func (b *bird) SetSpeed(speed int) Player {
 	b.speed = speed
 	return b
-}
-
-func (b *bird) Position() Point {
-	return b.position
 }
 
 func (b *bird) Speed() int {
@@ -48,6 +53,6 @@ func (b *bird) Accel() int {
 	return b.accel
 }
 
-func NewBirdPlayer() Player {
-	return &bird{}
+func NewBirdPlayer(pos Point, speed, accel int) Player {
+	return &bird{pos, speed, accel}
 }
