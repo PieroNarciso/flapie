@@ -5,16 +5,14 @@ type Player interface {
 	SetY(y int) Player
 	X() int
 	Y() int
-	SetSpeed(speed int) Player
-	SetAccel(accel int) Player
-	Speed() int
-	Accel() int
+	SetSpeed(speed float64) Player
+	AddSpeed(speed float64) Player
+	Speed() float64
 }
 
 type bird struct {
 	position Point
-	speed    int
-	accel    int
+	speed    float64
 }
 
 func (b *bird) SetX(x int) Player {
@@ -35,24 +33,19 @@ func (b *bird) Y() int {
 	return b.position.Y
 }
 
-func (b *bird) SetSpeed(speed int) Player {
+func (b *bird) SetSpeed(speed float64) Player {
 	b.speed = speed
 	return b
 }
 
-func (b *bird) Speed() int {
+func (b *bird) Speed() float64 {
 	return b.speed
 }
 
-func (b *bird) SetAccel(accel int) Player {
-	b.accel = accel
+func (b *bird) AddSpeed(speed float64) Player {
 	return b
 }
 
-func (b *bird) Accel() int {
-	return b.accel
-}
-
-func NewBirdPlayer(pos Point, speed, accel int) Player {
-	return &bird{pos, speed, accel}
+func NewBirdPlayer(pos Point, speed float64) Player {
+	return &bird{pos, speed}
 }
