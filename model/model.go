@@ -1,33 +1,30 @@
 package model
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 
+	"github.com/PieroNarciso/flapie/constants"
 	"github.com/PieroNarciso/flapie/entity"
 )
 
-const (
-	FALL_SPEED = 40
-	JUMP_SPEED = 23
-	INIT_SPEED = 0
-)
 
 type TickMsg time.Time
 
 type tickRate struct {
 	lastTime time.Time
+	delta time.Duration
 }
 
-func (t *tickRate) UpdateLastTime() {
-	t.lastTime = time.Now()
+func (t *tickRate) UpdateDelta(tm time.Duration) {
+	t.delta = tm
 }
 
-func (t *tickRate) Delta() float64 {
-	delta := time.Since(t.lastTime).Seconds()
-	return delta
+func (t *tickRate) Delta() time.Duration {
+	return t.delta
 }
 
 type model struct {
@@ -42,7 +39,7 @@ type model struct {
 func NewModel() tea.Model {
 	point := entity.Point{X: 2, Y: 20}
 	return &model{
-		bird:      entity.NewBirdPlayer(point, INIT_SPEED),
+		bird:      entity.NewBirdPlayer(point, constants.INIT_SPEED),
 		obstacles: make([]entity.Obstacle, 0),
 		height:    0,
 		width:     0,
@@ -52,8 +49,8 @@ func NewModel() tea.Model {
 }
 
 func (m model) tick() tea.Cmd {
-	return tea.Tick(time.Second/10, func(t time.Time) tea.Msg {
-		return TickMsg(t)
+	return tea.Tick(time.Second/constants.FPS, func(t time.Time) tea.Msg {
+		return TickMsg(time.Now())
 	})
 }
 
@@ -62,28 +59,21 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.pressed == true {
-		m.bird.SetSpeed(JUMP_SPEED)
-	}
-	m.pressed = false
-	newY := m.bird.Y() + int(m.bird.Speed()*m.tickRate.Delta())
-	m.bird.SetY(newY)
-	newSpeed := m.bird.Speed() - FALL_SPEED*m.tickRate.Delta()
-	m.bird.SetSpeed(newSpeed)
-	m.tickRate.UpdateLastTime()
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		case " ":
-			m.pressed = true
+			m.bird.Jump()
 		}
 	case tea.WindowSizeMsg:
 		m.height = msg.Height
 		m.width = msg.Width
 	case TickMsg:
+		delta := time.Since(time.Time(msg))
+		m.tickRate.UpdateDelta(delta)
+		m.bird.Update(delta)
 		return m, m.tick()
 	}
 	return m, nil
@@ -93,9 +83,9 @@ func (m model) View() string {
 
 	view := strings.Builder{}
 
-	// view.WriteString(fmt.Sprintf("Pos: %v  Speed: %v   Delta: %v\n", m.bird.Y(), m.bird.Speed(), m.tickRate.Delta()))
+	view.WriteString(fmt.Sprintf("Pos: %v  Speed: %v   Delta: %v\n", m.bird.Y(), m.bird.Speed(), m.tickRate.Delta()/100.0))
 
-	for y := m.height-1; y >= 0; y-- {
+	for y := m.height - 1; y >= 0; y-- {
 		for x := 0; x < m.width; x++ {
 			if y == m.bird.Y() && x == m.bird.X() {
 				view.WriteRune('*')
